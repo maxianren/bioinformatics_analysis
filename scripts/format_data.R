@@ -1,10 +1,12 @@
 library(tidyr)
 library(dplyr)
 library(readr)
+library(readxl)
 
+# Extract genes for pathway ####################################################
 extract_pathway_gene <- function(file_path, pathways) {
-  # Read the CSV file
-  df <- read.csv(file_path, , stringsAsFactors = FALSE, check.names = FALSE)
+  # Read the xls file
+  df <- readxl::read_excel(file_path, skip = 1, col_names = TRUE)
   
   # Split the 'Molecules' column into multiple rows
   long_df <- df %>%
@@ -21,6 +23,7 @@ extract_pathway_gene <- function(file_path, pathways) {
   return(final_df)
 }
 
+# Get TPM for each pathway's genes #############################################
 process_files_tpm <- function(directory, gene_pathway_df, pattern) {
   file_paths <- list.files(directory, pattern = pattern, full.names = TRUE)
   updated_gene_pathway_df <- gene_pathway_df
@@ -50,7 +53,7 @@ process_files_tpm <- function(directory, gene_pathway_df, pattern) {
   
   return(updated_gene_pathway_df)
 }
-
+# Export CSV file from input xls file ##########################################
 gen_tpm_data <- function(folder, pathways_list, pattern, input_file, output_name) {
   gene_pathway_df <- extract_pathway_gene(input_file, pathways_list)
   
