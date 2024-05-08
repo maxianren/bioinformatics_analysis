@@ -2,6 +2,7 @@ library(tidyr)
 library(dplyr)
 library(readr)
 library(readxl)
+library(tidyverse)
 # data for pathway-gene heatmap ####
 ## Extract genes for pathway
 extract_pathway_gene <- function(file_path, pathways) {
@@ -23,8 +24,8 @@ extract_pathway_gene <- function(file_path, pathways) {
   return(final_df)
 }
 
-## Get TPM for each pathway's genes
-process_files_tpm <- function(directory, gene_pathway_df, pattern) {
+## Get TPM from gene files into a pivot
+process_files_tpm_pivot <- function(directory, gene_pathway_df, pattern) {
   file_paths <- list.files(directory, pattern = pattern, full.names = TRUE)
   updated_gene_pathway_df <- gene_pathway_df
   
@@ -53,6 +54,30 @@ process_files_tpm <- function(directory, gene_pathway_df, pattern) {
   
   return(updated_gene_pathway_df)
 }
+
+## unpivot df
+unpivot <- function(df_pivot){
+  df_unpivot <- df_pivot %>%
+    pivot_longer(
+      cols = ends_with("_TPM"),
+      names_to = "Sample", 
+      values_to = "TPM"
+    ) %>%
+    dplyr::mutate(
+      Number = str_extract(Sample, "(?<=_)\\d+(?=_?)"), # Extracts the number with the underscore
+      # Number = str_remove(Number, "_"),
+      Sample = str_remove(Sample, "_TPM"),  # Removes the '_TPM' suffix
+      Sample = str_remove(Sample, "_\\d+_"), # Removes the leading number with underscore
+      Gene = str_extract(Sample, "^[^\\-]+"), # Extracts the gene part before the first hyphen
+      Sample = str_remove(Sample, "^[^\\-]+\\-"), # Removes the gene part and the following hyphen
+      Gender = str_sub(Sample, 1, 1),  # Assumes the gender is denoted by the first character after gene
+      Treatment = str_sub(Sample, 3) # Assumes treatment is the rest after removing the gender and hyphen
+    ) %>%
+    dplyr::select(-Sample)
+  print(df_unpivot)
+  return(df_unpivot)
+}
+
 ## Export CSV file from input xls file 
 gen_tpm_data <- function(folder, pathways_list, pattern, input_file, output_name) {
   gene_pathway_df <- extract_pathway_gene(input_file, pathways_list)
@@ -63,7 +88,7 @@ gen_tpm_data <- function(folder, pathways_list, pattern, input_file, output_name
 }
 
 # data for standard heatmap #######################################
-extract_diff_expr_tpm <- function(folder, diff_expr, gene_folder, pattern, top_n, sort_by) {
+extract_diff_expr_tpm <- function(folder, diff_expr, gene_folder, pattern, top_n, pivot) {
   df_diff_expr <- read.csv(diff_expr, check.names = FALSE)
   
   df_sort <- df_diff_expr %>%
@@ -82,11 +107,12 @@ extract_diff_expr_tpm <- function(folder, diff_expr, gene_folder, pattern, top_n
   
   combined_df <- bind_rows(df_top_n, df_tail_n)
   
-  print(combined_df)
-
- 
-
-  gene_tpm <- process_files_tpm(folder, combined_df, pattern)
+  gene_tpm_pivot <- process_files_tpm_pivot(folder, combined_df, pattern)
+  if (pivot == F) {
+    gene_tpm <- unpivot(gene_tpm_pivot)
+  } else {
+    gene_tpm <- gene_tpm_pivot
+  }
   
   return(gene_tpm)
   

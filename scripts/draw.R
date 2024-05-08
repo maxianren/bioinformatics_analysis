@@ -165,7 +165,7 @@ draw_bar <- function(input_file, pathways_list, title, output){
 }
 
 
-# Draw Go analysis map
+# Draw Go analysis map #########################################################
 draw_go_analysis <- function(genes, top_n, title, output){
   
   GO_results <- enrichGO(gene = genes, OrgDb = "org.Mm.eg.db", keyType = "SYMBOL", ont='ALL')
@@ -175,4 +175,16 @@ draw_go_analysis <- function(genes, top_n, title, output){
   png(output, width = 2000, height = 4000, res = 300, bg = "white")
   print(plot)
   dev.off()
+}
+
+# Draw box plot ##########################
+
+draw_box_plot <- function(df, title, output){ 
+  ggplot(df, aes(x=Name, y=TPM, fill=Treatment)) + 
+           geom_boxplot() +
+    labs(title = title, x = "Gene", y = "TPM") +
+    theme_minimal()
+  
+  ggsave(output, width = 10, height = 8, bg = "white")
+
 }

@@ -1,5 +1,7 @@
-source("~/result/scripts/format_data.R")
-source("~/result/scripts/draw.R")
+setwd("~/Documents/work/bio_analysis/bioinformatics_analysis")
+source("scripts/format_data.R")
+source("scripts/draw.R")
+
 
 
 # pipe line for heat map & bar chart pathway ####################################################################
@@ -100,9 +102,9 @@ draw_heatmap(input_file = file.path(data_dir, "gene_pathway_tpm_ko_all.csv"),
 
 # pipe line for heat map ####################################################################
 ## var =========================================================================
-gene_folder = "~/result/data/LPS/genes"
-data_dir = "~/result/data/LPS"
-out_dir = "~/result/out/LPS"
+gene_folder = "data/LPS/genes"
+data_dir = "data/LPS"
+out_dir = "out/LPS"
 ## compare treatment ====
 column_level_1_treatment = c("pWT", "pWT","pWT","pWT","pWT","pKO","pKO","pKO","pKO","pKO","pKO")
 column_level_2_treatment = c("PBS","PBS","LPS_5_ug","LPS_5_ug","LPS_5_ug", "PBS","PBS","LPS_5_ug","LPS_5_ug","LPS_5_ug","LPS_5_ug")
@@ -123,7 +125,7 @@ df_diff_expr = extract_diff_expr_tpm(file.path(data_dir,"diff_expr_5_g vs. PBS.c
                              folder = gene_folder,
                              pattern = "(.*KO.*5_g.*|.*KO.*PBS.*|.*WT.*5_g.*|.*WT.*PBS.*)",
                              top_n = 30,
-                             sort_by = 'Log? fold change')
+                             pivot = T)
 
 draw_heatmap_std(df = df_diff_expr, 
                  column_order =column_order_treatment, 
@@ -132,6 +134,8 @@ draw_heatmap_std(df = df_diff_expr,
                  column_title = "Gene Expression - LPS vs PBS, Sorted by Log2 fold change Top 60",
                  flag_row_name = T,
                  output = file.path(out_dir, "heatmap_ko_5_g vs. PBS - top60.png"))
+
+####  5g vs 100g vs pbs -----
 
 ### compare gene ----
 df_diff_expr = extract_diff_expr_tpm(file.path(data_dir,"diff_expr_pWT vs. pKO.csv"), 
@@ -152,9 +156,20 @@ draw_heatmap_std(df = df_diff_expr,
 ## go analysis ====
 log_2_FC = 1
 top_n = 10
-gene = extract_diff_expr_log2fc(input_file=file.path(data_dir,"diff_expr_pWT vs. pKO.csv"), 
+gene = extract_diff_expr_log2fc(input_file=file.path(data_dir,"diff_expr_5_g vs. PBS.csv"), 
                               log_2_FC=log_2_FC)
 draw_go_analysis(gene, 
                  top_n = top_n,
-                 title = "Go Analysis: pWT vs. pKO",
-                 output = file.path(out_dir, "go_enrichment_pWT vs. pKO.png"))
+                 title = "Go Analysis: 5_g vs. PBS",
+                 output = file.path(out_dir, "go_enrichment_5_g vs. PBS.png"))
+
+# box plot
+df_diff_expr_unpivot = extract_diff_expr_tpm(file.path(data_dir,"diff_expr_5_g vs. PBS.csv"), 
+                                     folder = gene_folder,
+                                     pattern = "(.*KO.*5_g.*|.*KO.*PBS.*|.*WT.*5_g.*|.*WT.*PBS.*)",
+                                     top_n = 5,
+                                     pivot = F)
+
+draw_box_plot(df_diff_expr_unpivot,
+              title = "Box Plot 5_g vs. PBS",
+              output = file.path(out_dir, "box_plot_5_g vs. PBS.png"))
