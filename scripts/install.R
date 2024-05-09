@@ -1,10 +1,21 @@
-if (!require("BiocManager", quietly = TRUE))
+if (!require("BiocManager", quietly = TRUE)){
   install.packages("BiocManager")
+}
 
-BiocManager::install("ComplexHeatmap")
-s
-BiocManager::install("clusterProfiler")
+if (!require("clusterProfiler", quietly = TRUE)) {
+  BiocManager::install("clusterProfiler")
+}
+library(clusterProfiler)
 
-BiocManager::install("org.Mm.eg.db")
+if (!require("org.Mm.eg.db", quietly = TRUE)) {
+  BiocManager::install("org.Mm.eg.db")
+}
+library(org.Mm.eg.db)
 
-install.packages("tidyverse")
+if (!require("tidyverse", quietly = TRUE)) {
+  install.packages("tidyverse")
+}
+
+if (!require("ComplexHeatmap", quietly = TRUE)) {
+  install.packages("ComplexHeatmap", dependencies = TRUE)
+}

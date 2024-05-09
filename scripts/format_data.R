@@ -25,9 +25,9 @@ extract_pathway_gene <- function(file_path, pathways) {
 }
 
 ## Get TPM from gene files into a pivot
-process_files_tpm_pivot <- function(directory, gene_pathway_df, pattern) {
+process_files_tpm_pivot <- function(directory, df, pattern) {
   file_paths <- list.files(directory, pattern = pattern, full.names = TRUE)
-  updated_gene_pathway_df <- gene_pathway_df
+  updated_df <- df
   
   # Loop over file paths
   for (file_path in file_paths) {
@@ -39,20 +39,20 @@ process_files_tpm_pivot <- function(directory, gene_pathway_df, pattern) {
     file_name <- gsub(pattern = " \\(GE\\)\\.csv$", replacement = "", x = basename(file_path))
     file_name_column <- paste(file_name, "TPM", sep = "_")
     
-    # Join the data with gene_pathway_df based on 'Name' and 'Molecules'
-    merged_df <- updated_gene_pathway_df %>%
+    # Join the data with df based on 'Name' and 'Molecules'
+    merged_df <- updated_df %>%
       left_join(data_df, by = c("Name" = "Name")) %>%
       dplyr::select(Name, TPM) %>%
       dplyr::rename(!!file_name_column := TPM)
     
-    updated_gene_pathway_df[[file_name_column]] <- merged_df[[file_name_column]]
+    updated_df[[file_name_column]] <- merged_df[[file_name_column]]
     
     # remove NA
-    updated_gene_pathway_df <- updated_gene_pathway_df %>%
+    updated_df <- updated_df %>%
       filter(!if_any(ends_with("TPM"), is.na))
   }
   
-  return(updated_gene_pathway_df)
+  return(updated_df)
 }
 
 ## unpivot df

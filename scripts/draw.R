@@ -95,12 +95,7 @@ draw_heatmap_std <- function(df, column_order, column_level_1, column_level_2, c
     Treatment = column_level_2,
     annotation_name_side = "right"
   )
-  
-  # row_annotation <- rowAnnotation(
-  #   Pathway = data_sorted$Pathway, 
-  #   annotation_name_side = "bottom",  
-  #   show_annotation_name = TRUE 
-  # )
+
   
   # Normalize the data to Z-scores
   z_score_matrix <- t(scale(t(data_matrix)))
