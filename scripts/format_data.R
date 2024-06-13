@@ -64,7 +64,6 @@ TPMExtractor <- R6Class("TPMExtractor",
                                 Treatment = str_sub(Sample, 3)
                               ) %>%
                               dplyr::select(-Sample)
-                            print(df_unpivot)
                             return(df_unpivot)
                           }
                         )
