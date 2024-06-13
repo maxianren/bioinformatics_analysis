@@ -1,6 +1,3 @@
-<style>
-</style>
-
 # Analysis of RNA Sequencing Data Using CLC Genomics Workbench and R: An Example of Identifying genetic expressions and variations in comparative experiments
 
 ## introduction
