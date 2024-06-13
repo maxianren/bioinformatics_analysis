@@ -83,7 +83,81 @@ for (top_n in c(30, 100, 250)) {
   )
 }
 
-## compare treatment WT - 5_100 vs. PBS====
+## compare treatment TG - 5_g vs. PBS====
+column_level_1 = c("PBS","LPS_5_ug","LPS_5_ug","LPS_5_ug")
+column_level_2 = c("M","M","M","F")
+column_order = c("_19_pTG-M-PBS_TPM", 
+                 "_20_pTG-M-5_g_TPM", 
+                 "_21_pTG-M-5_g_TPM", 
+                 "_25_pTG-F-5_g_TPM")
+
+for (top_n in c(30, 100, 250)) {
+  if (top_n < 50) {
+    flag_row_name = T
+  } else {
+    flag_row_name = F
+  }
+  # process data
+  data <- DataProcessor$new(diff_expr_file = file.path(data_dir,"diff_expr_TG - 5_g vs. PBS.csv"), 
+                            gene_folder = gene_folder, 
+                            pattern = "(.*TG.*5_g.*|.*TG.*PBS.*)", 
+                            top_n = top_n, 
+                            pivot = T)
+  df_diff_expr <- data$extract_diff_expr_tpm()
+  
+  # plot
+  heatmap_plot <- HeatmapPlot$new(output = file.path(out_dir, sprintf("heatmap_TG - 5_g vs. PBS - top %d.png", top_n*2)), 
+                                  width = 6000, 
+                                  height = 4800, 
+                                  res = 300, 
+                                  bg = "white")
+  heatmap_plot$draw_heatmap_std(df = df_diff_expr, 
+                                column_order =column_order, 
+                                column_level_1 = column_level_1, 
+                                column_level_2 = column_level_2, 
+                                column_title = sprintf("Gene Expression - TG - 5_g vs. PBS, Sorted by Log2 fold change Top %d", top_n*2),
+                                flag_row_name = flag_row_name
+  )
+}
+
+## compare treatment SPURT - 5_g vs. PBS====
+column_level_1 = c("PBS","LPS_5_ug","LPS_5_ug","LPS_5_ug")
+column_level_2 = c("M","M","F","F")
+column_order = c("_28_pSPURT-M-PBS_TPM", 
+                 "_30_pSPURT-M-5_g_TPM", 
+                 "_34_pSPURT-F-5_g_TPM", 
+                 "_35_pSPURT-F-5_g_TPM")
+
+for (top_n in c(30, 100, 250)) {
+  if (top_n < 50) {
+    flag_row_name = T
+  } else {
+    flag_row_name = F
+  }
+  # process data
+  data <- DataProcessor$new(diff_expr_file = file.path(data_dir,"diff_expr_SPURT - 5_g vs. PBS.csv"), 
+                            gene_folder = gene_folder, 
+                            pattern = "(.*SPURT.*5_g.*|.*SPURT.*PBS.*)", 
+                            top_n = top_n, 
+                            pivot = T)
+  df_diff_expr <- data$extract_diff_expr_tpm()
+  
+  # plot
+  heatmap_plot <- HeatmapPlot$new(output = file.path(out_dir, sprintf("heatmap_SPURT - 5_g vs. PBS - top %d.png", top_n*2)), 
+                                  width = 6000, 
+                                  height = 4800, 
+                                  res = 300, 
+                                  bg = "white")
+  heatmap_plot$draw_heatmap_std(df = df_diff_expr, 
+                                column_order =column_order, 
+                                column_level_1 = column_level_1, 
+                                column_level_2 = column_level_2, 
+                                column_title = sprintf("Gene Expression - SPURT - 5_g vs. PBS, Sorted by Log2 fold change Top %d", top_n*2),
+                                flag_row_name = flag_row_name
+  )
+}
+
+## compare treatment WT - 100_g vs. PBS====
 column_level_1 = c("PBS","PBS","LPS_100_ug","LPS_100_ug","LPS_100_ug")
 column_level_2 = c("M","F","M","M","F")
 column_order = c("_1_pWT-M-PBS_TPM", 
@@ -121,7 +195,7 @@ for (top_n in c(30, 100, 250)) {
   )
 }
 
-## compare treatment KO - 5_100 vs. PBS====
+## compare treatment KO - 100_g vs. PBS====
 column_level_1 = c( "PBS","PBS","LPS_100_ug","LPS_100_ug")
 column_level_2 = c( "M","F","M","F")
 column_order = c("_11_pKO-M-PBS_TPM", 
@@ -154,6 +228,80 @@ for (top_n in c(30, 100, 250)) {
                                 column_level_1 = column_level_1, 
                                 column_level_2 = column_level_2, 
                                 column_title = sprintf("Gene Expression - KO - 100_g vs. PBS, Sorted by Log2 fold change Top %d", top_n*2),
+                                flag_row_name = flag_row_name
+  )
+}
+
+## compare treatment TG - 100_g vs. PBS====
+column_level_1 = c( "PBS","LPS_100_ug","LPS_100_ug","LPS_100_ug")
+column_level_2 = c( "M","M","M","F")
+column_order = c("_19_pTG-M-PBS_TPM", 
+                 "_22_pTG-M-100_g_TPM", 
+                 "_23_pTG-M-100_g_TPM", 
+                 "_42_pTG-F-100_g_TPM")
+
+for (top_n in c(30, 100, 250)) {
+  if (top_n < 50) {
+    flag_row_name = T
+  } else {
+    flag_row_name = F
+  }
+  # process data
+  data <- DataProcessor$new(diff_expr_file = file.path(data_dir,"diff_expr_TG - 100_g vs. PBS.csv"), 
+                            gene_folder = gene_folder, 
+                            pattern = "(.*TG.*100_g.*|.*TG.*PBS.*)", 
+                            top_n = top_n, 
+                            pivot = T)
+  df_diff_expr <- data$extract_diff_expr_tpm()
+  
+  # plot
+  heatmap_plot <- HeatmapPlot$new(output = file.path(out_dir, sprintf("heatmap_TG - 100_g vs. PBS - top %d.png", top_n*2)), 
+                                  width = 6000, 
+                                  height = 4800, 
+                                  res = 300, 
+                                  bg = "white")
+  heatmap_plot$draw_heatmap_std(df = df_diff_expr, 
+                                column_order =column_order, 
+                                column_level_1 = column_level_1, 
+                                column_level_2 = column_level_2, 
+                                column_title = sprintf("Gene Expression - TG - 100_g vs. PBS, Sorted by Log2 fold change Top %d", top_n*2),
+                                flag_row_name = flag_row_name
+  )
+}
+
+## compare treatment SPURT - 100_g vs. PBS====
+column_level_1 = c( "PBS","LPS_100_ug","LPS_100_ug","LPS_100_ug")
+column_level_2 = c( "M","M","F","F")
+column_order = c("_28_pSPURT-M-PBS_TPM", 
+                 "_32_pSPURT-M-100_g_TPM", 
+                 "_36_pSPURT-F-100_g_TPM", 
+                 "_37_pSPURT-F-100_g_TPM")
+
+for (top_n in c(30, 100, 250)) {
+  if (top_n < 50) {
+    flag_row_name = T
+  } else {
+    flag_row_name = F
+  }
+  # process data
+  data <- DataProcessor$new(diff_expr_file = file.path(data_dir,"diff_expr_SPURT - 100_g vs. PBS.csv"), 
+                            gene_folder = gene_folder, 
+                            pattern = "(.*SPURT.*100_g.*|.*SPURT.*PBS.*)", 
+                            top_n = top_n, 
+                            pivot = T)
+  df_diff_expr <- data$extract_diff_expr_tpm()
+  
+  # plot
+  heatmap_plot <- HeatmapPlot$new(output = file.path(out_dir, sprintf("heatmap_SPURT - 100_g vs. PBS - top %d.png", top_n*2)), 
+                                  width = 6000, 
+                                  height = 4800, 
+                                  res = 300, 
+                                  bg = "white")
+  heatmap_plot$draw_heatmap_std(df = df_diff_expr, 
+                                column_order =column_order, 
+                                column_level_1 = column_level_1, 
+                                column_level_2 = column_level_2, 
+                                column_title = sprintf("Gene Expression - SPURT - 100_g vs. PBS, Sorted by Log2 fold change Top %d", top_n*2),
                                 flag_row_name = flag_row_name
   )
 }
@@ -267,7 +415,46 @@ box_plot <- BoxPlot$new(file.path(out_dir, "box_plot_WT - 5_g vs. PBS.png"),
                         bg = "white")
 box_plot$draw_box_plot(df = df_diff_expr_unpivot, 
                        title = "Box Plot WT - 5_g vs. PBS")
+## TG - 5_g vs. PBS ===============================
+# Var
+top_n = 6
 
+# process data
+data <- DataProcessor$new(diff_expr_file = file.path(data_dir,"diff_expr_TG - 5_g vs. PBS.csv"), 
+                          gene_folder = gene_folder, 
+                          pattern = "(.*TG.*5_g.*|.*TG.*PBS.*)", 
+                          top_n = top_n, 
+                          pivot = F)
+df_diff_expr_unpivot <- data$extract_diff_expr_tpm()
+
+# plot
+box_plot <- BoxPlot$new(file.path(out_dir, "box_plot_TG - 5_g vs. PBS.png"), 
+                        width = 3000, 
+                        height = 2400, 
+                        res = 300, 
+                        bg = "white")
+box_plot$draw_box_plot(df = df_diff_expr_unpivot, 
+                       title = "Box Plot TG - 5_g vs. PBS")
+## SPURT - 5_g vs. PBS ===============================
+# Var
+top_n = 6
+
+# process data
+data <- DataProcessor$new(diff_expr_file = file.path(data_dir,"diff_expr_SPURT - 5_g vs. PBS.csv"), 
+                          gene_folder = gene_folder, 
+                          pattern = "(.*SPURT.*5_g.*|.*SPURT.*PBS.*)", 
+                          top_n = top_n, 
+                          pivot = F)
+df_diff_expr_unpivot <- data$extract_diff_expr_tpm()
+
+# plot
+box_plot <- BoxPlot$new(file.path(out_dir, "box_plot_SPURT - 5_g vs. PBS.png"), 
+                        width = 3000, 
+                        height = 2400, 
+                        res = 300, 
+                        bg = "white")
+box_plot$draw_box_plot(df = df_diff_expr_unpivot, 
+                       title = "Box Plot SPURT - 5_g vs. PBS")
 ## KO - 100_g vs. PBS ===============================
 # Var
 top_n = 6

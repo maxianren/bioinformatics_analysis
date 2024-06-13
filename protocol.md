@@ -35,12 +35,20 @@
 ### R
 
 #### requirements
+* Operating System: R can be installed on Windows, macOS, and Linux platforms.
+*	Hardware Requirements: No specific hardware requirements. Performance improves with better hardware.
+* Memory Requirements: 2 GB of RAM minimum recommended, 4 GB of RAM recommended for handling larger datasets.
 
 #### download
+To use R for data analysis, you will need to install both R and RStudio, a popular Integrated Development Environment (IDE) that makes using R easier. download, installation instruction can be found:https://posit.co/download/rstudio-desktop/
 
 #### package installation
+R packages are collections of functions and data sets developed by the community that enhance R’s functionality, allowing you to perform additional types of analysis or improve ease of use. For example, ```ggplot2``` enhances graphical capabilities, ```dplyr``` offers advanced data manipulation, and tidyr helps in organizing data. 
+![My Example Image](images_protocol/1718304111241.jpg)
 
-#### configuration
+Installing packages in R is straightforward:
+* 
+
 
 #### Licenses
 
@@ -89,3 +97,5 @@
 #### run the code to generate desired plots
 
 #### modify the code for customized plots
+
+# Reference

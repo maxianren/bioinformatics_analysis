@@ -47,8 +47,8 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                            rownames(data_matrix) <- df$Name
                            
                            column_annotation <- HeatmapAnnotation(
-                             Gene = column_level_1,
-                             Treatment = column_level_2,
+                             Treatment = column_level_1,
+                             Sex = column_level_2,
                              annotation_name_side = "right"
                            )
                            
