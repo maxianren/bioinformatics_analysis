@@ -131,7 +131,7 @@ R and RStudio are free software. R is released under the GNU General Public Lice
 #### explanation and rational of the code
 Once you have the codebase on your local machine, here’s what you will find inside:
 
- - Objective of the Code:
+- Objective of the Code:
  The provided scripts are designed to perform customized data analysis on results generated from CLC Genomics Workbench. The main objectives are:
   - Data Transformation: Convert raw data into a format suitable for analysis and visualization.
   - Plot Generation: Create informative visualizations to compare treatments within the same gene type. Example plots include heatmaps for visual comparison, box plots for statistical distribution, and GO analysis for understanding gene functions and pathways.
@@ -199,7 +199,7 @@ To execute the analysis and generate plots:
       ```
   - Adjust the parameters as needed, select the script lines, and run them to generate and save the plot in the specified out/ directory.
   ![Adjust parameters to generate plot](images_protocol/1718328139293.jpg)
-  ![Result](images_protocol/go_enrichment_KO - 5_g vs. PBS.png)
+  ![Result](images_protocol/1718329786809.png)
 
 #### modify the code for customized plots
 To adapt the analysis for different comparisons or conditions:
