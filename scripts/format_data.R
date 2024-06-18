@@ -101,6 +101,7 @@ GeneFeatureExtractor <- R6Class("GeneFeatureExtractor",
                                   },
                                   
                                   get_feature_hierarchy = function(suffix = paste0("_", self$feature)) {
+
                                     df <- self$parse_file_paths()
                                     df$file_name_clean <- paste0(df$file_name_clean, suffix)
                                     df <- df %>%
@@ -166,6 +167,7 @@ DataProcessor <- R6Class("DataProcessor",
                       },
                       
                       extract_top_n_gene_feature = function(feature, top_n, pivot) {
+
                         diff_expr <- DifferentialExpressionDataProcessor$new(self$diff_expr_file)
                         gene_top_n <- diff_expr$get_top_n_genes(top_n)
                         feature_processor <- GeneFeatureExtractor$new(self$gene_folder, self$pattern, feature)
