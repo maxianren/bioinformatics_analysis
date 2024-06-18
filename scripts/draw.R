@@ -39,7 +39,7 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                        inherit = PlottingBase,
                        
                        public = list(
-                         draw_heatmap_std = function(df, column_order, column_level_1, column_level_2, column_title, flag_row_name) {
+                         draw = function(df, column_order, column_level_1, column_level_2, column_title, flag_row_name) {
                            data_matrix <- df %>%
                              dplyr::select(all_of(column_order)) %>%
                              as.matrix()
@@ -82,7 +82,7 @@ GoAnalysisPlot <- R6Class("GoAnalysisPlot",
                           inherit = PlottingBase,
                           
                           public = list(
-                            draw_go_analysis = function(genes, top_n, title) {
+                            draw = function(genes, top_n, title) {
                               GO_results <- enrichGO(gene = genes, OrgDb = "org.Mm.eg.db", keyType = "SYMBOL", ont = 'ALL')
                               plot <- dotplot(GO_results, showCategory = top_n, split = "ONTOLOGY", title = title) + facet_grid(ONTOLOGY ~ ., scale = "free")
                               
@@ -95,7 +95,7 @@ BoxPlot <- R6Class("BoxPlot",
                    inherit = PlottingBase,
                    
                    public = list(
-                     draw_box_plot = function(df, title) {
+                     draw = function(df, title) {
                        plot <- ggplot(df, aes(x = Name, y = TPM, fill = Treatment)) +
                          geom_boxplot() +
                          labs(title = title, x = "Gene", y = "TPM") +
