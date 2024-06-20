@@ -105,7 +105,7 @@ GeneFeatureExtractor <- R6Class("GeneFeatureExtractor",
                                     df <- self$parse_file_paths()
                                     df$file_name_clean <- paste0(df$file_name_clean, suffix)
                                     df <- df %>%
-                                      arrange(desc(treatment), desc(gender))
+                                      arrange(desc(treatment), desc(genotype), desc(gender))
                                     return(df)
                                   }
                                 )

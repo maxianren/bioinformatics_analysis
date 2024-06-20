@@ -1,3 +1,5 @@
+source("scripts/format_data.R")
+library(stringr)
 library(R6)
 library(gplots)
 library(ggplot2)
@@ -13,20 +15,24 @@ library(gridExtra)
 
 PlottingBase <- R6Class("PlottingBase",
                         public = list(
+                          data_dir = NULL,
+                          gene_folder = NULL,
                           output = NULL,
                           width = NULL,
                           height = NULL,
                           res = NULL,
                           bg = NULL,
-                          
-                          initialize = function(output, width, height, res, bg) {
+
+                          initialize = function(data_dir, gene_folder, output, width, height, res, bg) {
+                            self$data_dir <- data_dir
+                            self$gene_folder <- gene_folder
                             self$output <- output
                             self$width <- width
                             self$height <- height
                             self$res <- res
                             self$bg <- bg
                           },
-                          
+
                           save_plot = function(plot) {
                             png(self$output, width = self$width, height = self$height, res = self$res, bg = self$bg)
                             print(plot)
@@ -37,23 +43,40 @@ PlottingBase <- R6Class("PlottingBase",
 
 HeatmapPlot <- R6Class("HeatmapPlot",
                        inherit = PlottingBase,
-                       
+
                        public = list(
-                         draw = function(df, column_order, column_level_1, column_level_2, column_title, flag_row_name) {
-                           data_matrix <- df %>%
-                             dplyr::select(all_of(column_order)) %>%
-                             as.matrix()
-                           
-                           rownames(data_matrix) <- df$Name
-                           
+                         draw = function(diff_expr_file, column_title, flag_row_name, pattern, feature) {
+                           # var
+                           df_gene <- GeneFeatureExtractor$new(self$gene_folder, pattern, feature)$get_feature_hierarchy()
+
+                           column_order <- df_gene$file_name_clean
+                           column_level_1 <- df_gene$treatment
+                           column_level_2 <- df_gene$genotype
+                           column_level_3 <- df_gene$gender
+
                            column_annotation <- HeatmapAnnotation(
                              Treatment = column_level_1,
-                             Sex = column_level_2,
+                             Genotype = column_level_2,
+                             Gender = column_level_3,
                              annotation_name_side = "right"
                            )
-                           
+                           # get dataframe
+                           data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file),
+                                                     gene_folder = gene_folder,
+                                                     pattern = pattern)
+                           df_diff_expr <- data$extract_top_n_gene_feature(top_n = top_n,
+                                                                           pivot = T,
+                                                                           feature = feature)
+                           # plot
+                           data_matrix <- df_diff_expr %>%
+                             dplyr::select(all_of(column_order)) %>%
+                             as.matrix()
+
+                           rownames(data_matrix) <- df_diff_expr$Name
+
+
                            z_score_matrix <- t(scale(t(data_matrix)))
-                           
+
                            p <- Heatmap(
                              z_score_matrix,
                              name = "Expression",
@@ -72,17 +95,23 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                              row_names_side = "left",
                              column_names_side = "bottom"
                            )
-                           
+
                            self$save_plot(p)
                          }
                        )
 )
 
+
 GoAnalysisPlot <- R6Class("GoAnalysisPlot",
                           inherit = PlottingBase,
                           
                           public = list(
-                            draw = function(genes, top_n, title) {
+                            draw = function(diff_expr_file, top_n, title) {
+                              # get dataframe
+                              data = DifferentialExpressionDataProcessor$new(file_path = file.path(data_dir,diff_expr_file))
+                              genes = data$filter_by_log2_fc(log_2_FC)
+                              
+                              # plot
                               GO_results <- enrichGO(gene = genes, OrgDb = "org.Mm.eg.db", keyType = "SYMBOL", ont = 'ALL')
                               plot <- dotplot(GO_results, showCategory = top_n, split = "ONTOLOGY", title = title) + facet_grid(ONTOLOGY ~ ., scale = "free")
                               
@@ -95,8 +124,16 @@ BoxPlot <- R6Class("BoxPlot",
                    inherit = PlottingBase,
                    
                    public = list(
-                     draw = function(df, title) {
-                       plot <- ggplot(df, aes(x = Name, y = TPM, fill = Treatment)) +
+                     draw = function(diff_expr_file, title, pattern, feature) {
+                       # process data
+                       data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file), 
+                                                 gene_folder = self$gene_folder, 
+                                                 pattern = pattern)
+                       df_diff_expr_unpivot <- data$extract_top_n_gene_feature(top_n = top_n, 
+                                                                               pivot = F,
+                                                                               feature = feature)
+                       # plot
+                       plot <- ggplot(df_diff_expr_unpivot, aes(x = Name, y = TPM, fill = Treatment)) +
                          geom_boxplot() +
                          labs(title = title, x = "Gene", y = "TPM") +
                          theme_minimal()
