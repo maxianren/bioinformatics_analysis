@@ -1,7 +1,6 @@
 source("scripts/format_data.R")
 library(stringr)
 library(R6)
-library(gplots)
 library(ggplot2)
 library(tidyr)
 library(dplyr)

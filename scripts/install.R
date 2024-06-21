@@ -26,13 +26,13 @@ if (!require("ComplexHeatmap", quietly = TRUE)) {
         install.packages("devtools", dependencies = TRUE)
       }
       library(devtools)
-      install_github("jockergoo/ComplexHeatmap", dependencies = TRUE)
+      install_github("jokergoo/ComplexHeatmap", dependencies = TRUE)
     } else {
       stop(e) 
     }
   })
 }
 
-if (!require("ggplot", quietly = TRUE)) {
-  install.packages("ggplot", dependencies = TRUE)
-}
+# if (!require("ggplot", quietly = TRUE)) {
+#   install.packages("ggplot", dependencies = TRUE)
+# }

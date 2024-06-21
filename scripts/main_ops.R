@@ -1,5 +1,5 @@
-source("scripts/draw.R")
 source("scripts/install.R")
+source("scripts/draw.R")
 gene_folder = "data/LPS/genes"
 data_dir = "data/LPS"
 out_dir = "out/LPS"
