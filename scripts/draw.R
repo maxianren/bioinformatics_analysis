@@ -74,7 +74,6 @@ HeatmapPlot <- R6Class("HeatmapPlot",
 
                            rownames(data_matrix) <- df_diff_expr$Name
 
-
                            z_score_matrix <- t(scale(t(data_matrix)))
 
                            p <- Heatmap(
@@ -95,7 +94,7 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                              row_names_side = "left",
                              column_names_side = "bottom"
                            )
-
+                           # save the image
                            self$save_plot(p)
                          }
                        )
@@ -114,7 +113,8 @@ GoAnalysisPlot <- R6Class("GoAnalysisPlot",
                               # plot
                               GO_results <- enrichGO(gene = genes, OrgDb = "org.Mm.eg.db", keyType = "SYMBOL", ont = 'ALL')
                               plot <- dotplot(GO_results, showCategory = top_n, split = "ONTOLOGY", title = title) + facet_grid(ONTOLOGY ~ ., scale = "free")
-                              
+
+                              # save the image
                               self$save_plot(plot)
                             }
                           )
@@ -137,7 +137,8 @@ BoxPlot <- R6Class("BoxPlot",
                          geom_boxplot() +
                          labs(title = title, x = "Gene", y = "TPM") +
                          theme_minimal()
-                       
+
+                       # save the image
                        self$save_plot(plot)
                      }
                    )

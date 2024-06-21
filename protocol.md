@@ -148,7 +148,7 @@ Once you have the codebase on your local machine, here’s what you will find in
   - bioinformatics_analysis.Rproj: An R project file that can be opened with RStudio to manage the entire project easily.
 
 
-#### allocate input files
+#### allocate input files and output path
 To organize your data efficiently, you may create specific folders within the data/ and out/ directories:
 
 - Input Files:
@@ -167,48 +167,128 @@ To execute the analysis and generate plots:
 - Open the Project:
   - Launch RStudio.
   - Open bioinformatics_analysis.Rproj to initiate the R project environment.
+  - Manually set working directory if the working directory is not set properly:Session > Set Working Directory > To Project Directory.
 - Prepare the Scripts:
   - Open main_ops.R. This script orchestrates the workflow, calling functions from other scripts.
   - Ensure main_ops.R includes references to other necessary scripts (install.R, data_format.R, draw.R) using source() function calls.
-- Set Input and Output:
   - In main_ops.R, specify paths for input data and output files.
-  ![Include reference scripts and define input and ouput locations](images_protocol/1718326692383.jpg)
-  - Execute the relevant sections of the script by selecting the lines and pressing Ctrl+Enter (or Cmd+Enter on Mac). Confirm that paths and data are correctly recognized in the console output.
-  ![Include reference scripts and define input and ouput locations](images_protocol/1718327188423.jpg)
+  ![Include reference scripts and define input and ouput locations](images_protocol/1718921091701.jpg)
+  - Execute the relevant sections of the script by selecting the lines and pressing "Run" or Ctrl+Enter (or Cmd+Enter on Mac).
+  - Confirm that paths and data are correctly recognized and reference scripts are correclt included in the console output.
+  ![Include reference scripts and define input and ouput locations](images_protocol/1718921086289.jpg)
 - Generate Plots:
-  - The script includes commands to create box plots, perform GO analysis, and generate heatmaps.
-  - For example, to perform GO analysis comparing “PBS vs 5ug LPS under WT genotype”:
-
+  - Currently, the script includes commands to create box plots, perform GO analysis, and generate heatmaps.
+  - Example to perform GO analysis:
+    - Copy the following code:
       ```
-      ## WT - 5_g vs. PBS =============
-      # var
-      log_2_FC = 1
-      top_n = 10
+      diff_expr_file = "diff_expr_WT - 5_g vs. PBS.csv" # Change as you need
+      log_2_FC = 1 # Change as you need
+      top_n = 10 # Change as you need
       
-      # process data
-      data = DifferentialExpressionDataProcessor$new(file_path = file.path(data_dir,"diff_expr_WT - 5_g vs. PBS.csv"))
-      genes = data$filter_by_log2_fc(log_2_FC)
+      control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
       
       # plot
-      go_plot <- GoAnalysisPlot$new(output = file.path(out_dir, "go_enrichment_WT - 5_g vs. PBS.png"), 
+      go_plot <- GoAnalysisPlot$new(data_dir = data_dir,
+                                    gene_folder = gene_folder,
+                                    output = file.path(out_dir, sprintf("go_enrichment_%s.png", control_group)), 
                                     width = 2000, 
                                     height = 4000, 
                                     res = 300, 
                                     bg = "white")
-      go_plot$draw_go_analysis(genes, top_n, "Go Analysis: WT - 5_g vs. PBS")
+      go_plot$draw(diff_expr_file = diff_expr_file, 
+                   top_n = top_n, 
+                   title = sprintf("Go Analysis: %s", control_group))
       ```
-  - Adjust the parameters as needed, select the script lines, and run them to generate and save the plot in the specified out/ directory.
-  ![Adjust parameters to generate plot](images_protocol/1718328139293.jpg)
-  ![Result](images_protocol/1718329786809.png)
+    - Adjust the parameters as needed, select the script lines, and run them to generate and save the plot in the specified out/ directory.
+      - log_2_FC: It represents the log base 2 fold change threshold. It’s a criterion used to filter genes based on the magnitude of their expression changes. 
+      - top_n: Specifies the number of top differentially expressed genes to consider in the analysis.
+    ![Adjust parameters to generate plot](images_protocol/1718921839056.jpg)
+    - The results should be like:
+    ![Result](images_protocol/1718921839057.png)
+  - Example to generate box plot:
+    - Copy the following code:
+      ```
+      ## KO - 5_g vs. PBS ===============================
+      # Var
+      diff_expr_file = "diff_expr_WT - 5_g vs. PBS.csv" # Change as you need
+      pattern = "(.*WT.*5_g.*|.*WT.*PBS.*)" # Change as you need
+      top_n = 6 # Change as you need
+      
+      feature = "TPM"
+      control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+      
+      # plot
+      box_plot <- BoxPlot$new(data_dir = data_dir,
+                              gene_folder = gene_folder,
+                              output = file.path(out_dir, sprintf("box_plot_KO - 5_g vs. PBS.png", control_group)),
+                              width = 3000, 
+                              height = 2400, 
+                              res = 300, 
+                              bg = "white")
+      box_plot$draw(diff_expr_file = diff_expr_file, 
+                    title = sprintf("Box Plot %s", control_group),
+                    pattern = pattern,
+                    feature = feature)
+      ```
+    - Adjust the parameters as needed, select the script lines, and run them to generate and save the plot in the specified out/ directory.
+      - diff_expr_file: specifies the filename containing the differential expression data. 
+      - pattern: This is a regular expression pattern used to filter filenames or data within files. The pattern "(.*WT.*5_g.*|.*WT.*PBS.*)" matches filenames that include “WT” with “5_g” or “PBS,” specifying which subsets of the data to focus on.
+      - top_n: Specifies the number of top differentially expressed genes to consider in the analysis.
+    ![Adjust parameters to generate plot](images_protocol/1718922199380.jpg)
+    - The results should be like:
+    ![Result](images_protocol/1718922199381.png)
+  - Example to perform heatmap:
+    - Copy the following code:
+      ```
+      ## compare treatment KO - 100_g vs. PBS====
+      # var
+      diff_expr_file = "diff_expr_KO - 100_g vs. PBS.csv" # Change as you need
+      pattern = "(.*KO.*100_g.*|.*KO.*PBS.*)" # Change as you need
+      
+      feature = "TPM"
+      control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+      
+      # top 2Ns
+      for (top_n in c(30, 100, 250)) {
+        if (top_n < 50) {flag_row_name = T} else {flag_row_name = F}
+       
+        # plot
+        heatmap_plot <- HeatmapPlot$new(data_dir = data_dir,
+                                        gene_folder = gene_folder,
+                                        output = file.path(out_dir, sprintf("heatmap_%s - top %d.png", control_group, top_n*2)), 
+                                        width = 6000, 
+                                        height = 4800, 
+                                        res = 300, 
+                                        bg = "white")
+        heatmap_plot$draw(diff_expr_file = diff_expr_file,
+                          column_title = sprintf("Gene Expression - %s, Sorted by Log2 fold change Top %d", control_group, top_n*2),
+                          flag_row_name = flag_row_name,
+                          pattern = pattern,
+                          feature = feature)
+      }
+      ```
+    - Adjust the parameters as needed, select the script lines, and run them to generate and save the plot in the specified out/ directory.
+      - diff_expr_file: specifies the filename containing the differential expression data. 
+      - pattern: This is a regular expression pattern used to filter filenames or data within files. The pattern "(.*WT.*5_g.*|.*WT.*PBS.*)" matches filenames that include “WT” with “5_g” or “PBS,” specifying which subsets of the data to focus on.
+      - top_n: Specifies the number of top differentially expressed genes to consider in the analysis.
+      - for (top_n in c(30, 100, 250)): This loop iterates over different values of top_n, allowing multiple analyses or visualizations for 30, 100, and 250 top differentially expressed genes, respectively.
+    ![Adjust parameters to generate plot](images_protocol/1718922803411.jpg)
+    - Unlike the previous code, this example demonstrates how to generate a heatmap that displays varying numbers of genes using a loop. The results should appear as follows:
+    ![Result](images_protocol/1718922803412.png)
+    ![Result](images_protocol/1718922803413.png)
+    ![Result](images_protocol/1718922803414.png)
 
 #### modify the code for customized plots
-To adapt the analysis for different comparisons or conditions:
+- Enhancing Plot Customization
 
-- Copy and Modify the Code:
-  - Duplicate the sections of the script for the analysis you wish to modify.
-  - Change the input and output paths, parameter values (like log2_fc_threshold and top_n_genes), and other specific settings to match the new experimental conditions (e.g., “PBS vs 100ug LPS” or different genotypes like KO, TG, SPURT).
-- Re-run the Analysis:
-  - After making the necessary changes, re-run the modified sections of the code.
-  - Check the out/ directory for the new plots to ensure they have been generated as expected.
+  While previous examples demonstrate generating plots with minimal modifications, creating more sophisticated and tailored visualizations requires modifications to the draw.R script. Specifically, you can adjust the parameters within the draw method of each plotting class to suit your specific requirements.
+
+- Creating New Type of Plots Leveraging Existing Classes and Methods
+
+  To create different types of plots, you can utilize existing classes and methods that handle data transformation and set general plotting parameters. This approach ensures consistency in data handling and plot styling across different types of visualizations. To aid in further development and customization, consider reviewing the following diagram that outlines the architecture of the plotting classes and methods. This visualization will help you understand how different components interact and where to make effective enhancements:
+
+  ![Architecture Diagram](images_protocol/1718938276336.jpg)
+
+  The diagram should ideally provide a clear mapping of class inheritances, method dependencies, and how data flows through these components. Ensure that it highlights key areas where developers can inject custom code or modify existing functionalities to meet their visualization needs.
   
 # Reference
