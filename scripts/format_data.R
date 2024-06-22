@@ -121,17 +121,20 @@ DifferentialExpressionDataProcessor <- R6Class("DifferentialExpressionDataProces
                                       self$df_diff_expr <- read.csv(file_path, check.names = FALSE)
                                     },
                                     
-                                    get_top_n_genes = function(top_n) {
-                                      df_sort <- self$df_diff_expr %>%
-                                        filter(!is.nan(`P-value`)) %>%
+                                    get_top_n_genes = function(top_n, log_2_FC, p_value) {
+                                      df_filtered <- self$filter_df(log_2_FC, p_value)%>%
                                         arrange(desc(`Log? fold change`))
+                                      # the case of not choosing top n
+                                      if (top_n == 0) {
+                                        return (df_filtered)
+                                      }
                                       
-                                      df_top_n <- df_sort %>%
+                                      df_top_n <- df_filtered %>%
                                         dplyr::slice(1:top_n) %>%
                                         dplyr::select("Name", `Log? fold change`, `P-value`)
                                       
-                                      num_rows <- nrow(df_sort)
-                                      df_tail_n <- df_sort %>%
+                                      num_rows <- nrow(df_filtered)
+                                      df_tail_n <- df_filtered %>%
                                         dplyr::slice((num_rows - top_n + 1):num_rows) %>%
                                         dplyr::select("Name", `Log? fold change`, `P-value`)
                                       
@@ -139,10 +142,14 @@ DifferentialExpressionDataProcessor <- R6Class("DifferentialExpressionDataProces
                                       return(combined_df)
                                     },
                                     
-                                    filter_by_log2_fc = function(log_2_FC) {
+                                    filter_df = function(log_2_FC, p_value) {
                                       df_filtered <- self$df_diff_expr %>%
-                                        filter(!is.na(`P-value`) & `Log? fold change` > log_2_FC) %>%
-                                        arrange(desc(`Log? fold change`)) %>%
+                                        filter(!is.na(`P-value`) & abs(`Log? fold change`) > log_2_FC & `P-value` < p_value) 
+                                      
+                                      return(df_filtered)
+                                    },
+                                    filter_gene = function(log_2_FC, p_value) {
+                                      df_filtered <- self$filter_df(log_2_FC, p_value) %>%
                                         dplyr::select('Name')
                                       
                                       name_vector <- df_filtered %>%
@@ -166,10 +173,10 @@ DataProcessor <- R6Class("DataProcessor",
 
                       },
                       
-                      extract_top_n_gene_feature = function(feature, top_n, pivot) {
+                      extract_top_n_gene_feature = function(feature, top_n, pivot, log_2_FC, p_value) {
 
                         diff_expr <- DifferentialExpressionDataProcessor$new(self$diff_expr_file)
-                        gene_top_n <- diff_expr$get_top_n_genes(top_n)
+                        gene_top_n <- diff_expr$get_top_n_genes(top_n, log_2_FC, p_value)
                         feature_processor <- GeneFeatureExtractor$new(self$gene_folder, self$pattern, feature)
                         
                         gene_feature_pivot <- feature_processor$extract_feature_pivot(gene_top_n)

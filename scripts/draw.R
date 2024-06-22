@@ -44,8 +44,10 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                        inherit = PlottingBase,
 
                        public = list(
-                         draw = function(diff_expr_file, column_title, flag_row_name, pattern, feature) {
+                         draw = function(diff_expr_file, column_title, flag_row_name, top_n, pattern) {
                            # var
+                           feature = "TPM"
+
                            df_gene <- GeneFeatureExtractor$new(self$gene_folder, pattern, feature)$get_feature_hierarchy()
 
                            column_order <- df_gene$file_name_clean
@@ -65,15 +67,22 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                                                      pattern = pattern)
                            df_diff_expr <- data$extract_top_n_gene_feature(top_n = top_n,
                                                                            pivot = T,
-                                                                           feature = feature)
+                                                                           feature = feature,
+                                                                           log_2_FC = 2, 
+                                                                           p_value = 0.05)
                            # plot
                            data_matrix <- df_diff_expr %>%
                              dplyr::select(all_of(column_order)) %>%
                              as.matrix()
 
                            rownames(data_matrix) <- df_diff_expr$Name
-
+                           
+                           max_limit = 4
+                           min_limit = -4
+                           
                            z_score_matrix <- t(scale(t(data_matrix)))
+                           z_score_matrix <- pmin(pmax(z_score_matrix, min_limit), max_limit)
+
 
                            p <- Heatmap(
                              z_score_matrix,
@@ -105,9 +114,12 @@ GoAnalysisPlot <- R6Class("GoAnalysisPlot",
                           
                           public = list(
                             draw = function(diff_expr_file, top_n, title) {
+                              # var
+                              log_2_FC = 1
+                              p_value = 0.05
                               # get dataframe
                               data = DifferentialExpressionDataProcessor$new(file_path = file.path(data_dir,diff_expr_file))
-                              genes = data$filter_by_log2_fc(log_2_FC)
+                              genes = data$filter_gene(log_2_FC, p_value)
                               
                               # plot
                               GO_results <- enrichGO(gene = genes, OrgDb = "org.Mm.eg.db", keyType = "SYMBOL", ont = 'ALL')
@@ -123,14 +135,19 @@ BoxPlot <- R6Class("BoxPlot",
                    inherit = PlottingBase,
                    
                    public = list(
-                     draw = function(diff_expr_file, title, pattern, feature) {
+                     draw = function(diff_expr_file, title, pattern) {
+                       # var
+                       feature = "TPM"
+
                        # process data
                        data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file), 
                                                  gene_folder = self$gene_folder, 
                                                  pattern = pattern)
                        df_diff_expr_unpivot <- data$extract_top_n_gene_feature(top_n = top_n, 
                                                                                pivot = F,
-                                                                               feature = feature)
+                                                                               feature = feature, 
+                                                                               log_2_FC = 2, 
+                                                                               p_value = 0.05)
                        # plot
                        plot <- ggplot(df_diff_expr_unpivot, aes(x = Name, y = TPM, fill = Treatment)) +
                          geom_boxplot() +
