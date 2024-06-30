@@ -77,11 +77,11 @@ HeatmapPlot <- R6Class("HeatmapPlot",
 
                            rownames(data_matrix) <- df_diff_expr$Name
                            
-                           max_limit = 4
-                           min_limit = -4
+                           # max_limit = 4
+                           # min_limit = -4
                            
                            z_score_matrix <- t(scale(t(data_matrix)))
-                           z_score_matrix <- pmin(pmax(z_score_matrix, min_limit), max_limit)
+                           # z_score_matrix <- pmin(pmax(z_score_matrix, min_limit), max_limit)
 
 
                            p <- Heatmap(
@@ -95,10 +95,10 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                              column_title = column_title,
                              row_title = "Gene",
                              row_title_side = "left",
-                             row_names_gp = gpar(fontsize = 14),
-                             column_names_gp = gpar(fontsize = 14),
+                             row_names_gp = gpar(fontsize = 18),
+                             column_names_gp = gpar(fontsize = 18),
                              heatmap_legend_param = list(title = "Expression Level"),
-                             column_names_rot = 60,
+                             column_names_rot = 45,
                              row_names_side = "left",
                              column_names_side = "bottom"
                            )
@@ -113,9 +113,10 @@ GoAnalysisPlot <- R6Class("GoAnalysisPlot",
                           inherit = PlottingBase,
                           
                           public = list(
-                            draw = function(diff_expr_file, top_n, title) {
+                            
+                            drawDotPlot = function(diff_expr_file, top_n, title) {
                               # var
-                              log_2_FC = 1
+                              log_2_FC = 2
                               p_value = 0.05
                               # get dataframe
                               data = DifferentialExpressionDataProcessor$new(file_path = file.path(data_dir,diff_expr_file))
@@ -129,6 +130,82 @@ GoAnalysisPlot <- R6Class("GoAnalysisPlot",
                               self$save_plot(plot)
                             }
                           )
+)
+
+KEGGPlot <- R6Class("KEGGAnalysisPlot",
+                          inherit = PlottingBase,
+                          
+                          private = list(
+                            
+                            replace_ids_with_symbols = function(gene_ids, mapping_df) {
+                              # Split the gene IDs on '/'
+                              split_ids <- strsplit(gene_ids, "/")
+                              
+                              # Replace each ID with its corresponding symbol
+                              symbols <- sapply(split_ids, function(ids) {
+                                symbols <- mapping_df$SYMBOL[match(ids, mapping_df$ENTREZID)]
+                                paste(symbols, collapse="/")
+                              })
+                              
+                              return(symbols)
+                            }
+                          ),
+                          
+                          public = list(
+
+                            # KEGG Analysis
+                            keggAnalysis = function(diff_expr_file, top_n) {
+
+                              # get dataframe
+                              data = DifferentialExpressionDataProcessor$new(file_path = file.path(data_dir,diff_expr_file))
+                              genes = data$get_filtered_genes_entrez_id(log_2_FC = 2, p_value = 0.05, org.Mm.eg.db)
+                              # genes = data$filter_gene(log_2_FC, p_value)
+
+                              KEGG_results <- enrichKEGG(
+                                gene=genes$ENTREZID,
+                                organism = "mmu",
+                                keyType = "kegg",
+                                pvalueCutoff = 0.05,
+                                pAdjustMethod = "BH",
+                              )
+                              return(KEGG_results)
+
+                            },
+                            #KEGG dot plot
+                            drawDotPlot = function(diff_expr_file, top_n, title){
+                              
+                              KEGG_results <- self$keggAnalysis(diff_expr_file, top_n)
+                              plot <- dotplot(KEGG_results, showCategory = top_n, title = title)
+                              # save the image
+                              self$save_plot(plot)
+                            },
+                            # KEGG cnet plot
+                            drawCNetPlot = function(diff_expr_file, top_n, title){
+                              data = DifferentialExpressionDataProcessor$new(file_path = file.path(data_dir,diff_expr_file))
+                              genes = data$get_filtered_genes_entrez_id(log_2_FC = 2, p_value = 0.05, org.Mm.eg.db)
+
+                              KEGG_results = self$keggAnalysis(diff_expr_file, top_n)
+                              
+                              #replace ids with gene name for better readability
+                              KEGG_results@result$geneID <- private$replace_ids_with_symbols(KEGG_results@result$geneID, genes)
+
+
+                              plot <- cnetplot(KEGG_results,
+                                               showCategory = top_n,
+                                               categorySize = "pvalue",
+                                               # foldChange=genes,
+                                               circular = TRUE,
+                                               color.params = list(edge = TRUE),
+                                               node_label = 'all',
+                                               edge_label = FALSE) + 
+                                ggtitle(title) +
+                                theme(plot.title = element_text(hjust = 0.5, size = 20),
+                                      text = element_text(size = 14))
+                              # save the image
+                              self$save_plot(plot)
+                            }
+                          )
+
 )
 
 BoxPlot <- R6Class("BoxPlot",
