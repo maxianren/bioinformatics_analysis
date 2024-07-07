@@ -33,6 +33,10 @@ if (!require("ComplexHeatmap", quietly = TRUE)) {
   })
 }
 
+if (!requireNamespace("corrplot", quietly = TRUE)) {
+  install.packages("corrplot")
+}
+
 # if (!require("ggplot", quietly = TRUE)) {
 #   install.packages("ggplot", dependencies = TRUE)
 # }

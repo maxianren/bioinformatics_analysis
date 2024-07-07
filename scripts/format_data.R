@@ -212,11 +212,27 @@ DataProcessor <- R6Class("DataProcessor",
 
                       },
                       
-                      extract_top_n_gene_feature = function(feature, top_n, pivot, log_2_FC, p_value) {
+                      extract_top_and_tail_n_gene_feature = function(feature, top_n, pivot, log_2_FC, p_value) {
 
                         diff_expr <- DifferentialExpressionDataProcessor$new(self$diff_expr_file)
                         print(diff_expr, top_n, log_2_FC)
                         gene_top_n <- diff_expr$get_top_and_tail_n_genes(top_n, log_2_FC, p_value)
+                        feature_processor <- GeneFeatureExtractor$new(self$gene_folder, self$pattern, feature)
+                        
+                        gene_feature_pivot <- feature_processor$extract_feature_pivot(gene_top_n)
+                        if (pivot == FALSE) {
+                          gene_feature <- feature_processor$extract_feature_unpivot(gene_feature_pivot)
+                        } else {
+                          gene_feature <- gene_feature_pivot
+                        }
+                        
+                        return(gene_feature)
+                      },
+                      extract_top_n_gene_feature = function(feature, top_n, pivot, log_2_FC, p_value) {
+
+                        diff_expr <- DifferentialExpressionDataProcessor$new(self$diff_expr_file)
+                        print(diff_expr, top_n, log_2_FC)
+                        gene_top_n <- diff_expr$get_top_n_genes(top_n, log_2_FC, p_value)
                         feature_processor <- GeneFeatureExtractor$new(self$gene_folder, self$pattern, feature)
                         
                         gene_feature_pivot <- feature_processor$extract_feature_pivot(gene_top_n)

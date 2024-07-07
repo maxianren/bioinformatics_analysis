@@ -114,4 +114,50 @@ box_plot <- BoxPlot$new(data_dir = data_dir,
 box_plot$draw(diff_expr_file = diff_expr_file, 
               title = sprintf("Box Plot %s", control_group),
               pattern = pattern)
+# correlation - matrix plot #####################################################################
+## KO - 5_g vs. PBS ===============================
+
+source("scripts/draw.R")
+
+# Var
+diff_expr_file = "diff_expr_WT - 5_g vs. PBS.csv" # Change as you need
+pattern = "(.*WT.*5_g.*|.*WT.*PBS.*)" # Change as you need
+top_n = 15 # Change as you need
+
+control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+
+# plot
+corr_matrix_plot <- CorrelationPlot$new(data_dir = data_dir,
+                        gene_folder = gene_folder,
+                        output = file.path(out_dir, sprintf("correlation_matrix_plot%s.png", control_group)),
+                        width = 2800, 
+                        height = 3200, 
+                        res = 300, 
+                        bg = "white")
+corr_matrix_plot$drawMatrixPlot(diff_expr_file = diff_expr_file, 
+              title = sprintf("correlation matrix plot %s - top %d", control_group, top_n),
+              pattern = pattern)
+# correlation - Chord plot #####################################################################
+## KO - 5_g vs. PBS ===============================
+
+source("scripts/draw.R")
+
+# Var
+diff_expr_file = "diff_expr_WT - 5_g vs. PBS.csv" # Change as you need
+pattern = "(.*WT.*5_g.*|.*WT.*PBS.*)" # Change as you need
+top_n = 5 # Change as you need
+
+control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+
+# plot
+corr_chord_plot <- CorrelationPlot$new(data_dir = data_dir,
+                        gene_folder = gene_folder,
+                        output = file.path(out_dir, sprintf("correlation_chord_plot%s.png", control_group)),
+                        width = 2800, 
+                        height = 2800, 
+                        res = 300, 
+                        bg = "white")
+corr_chord_plot$drawChordPlot(diff_expr_file = diff_expr_file, 
+              title = sprintf("correlation chord plot %s - top %d", control_group, top_n),
+              pattern = pattern)
 

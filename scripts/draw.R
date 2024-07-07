@@ -11,6 +11,8 @@ library(org.Mm.eg.db)
 library(AnnotationDbi)
 library(enrichplot)
 library(gridExtra)
+library(corrplot)
+library(circlize)
 
 PlottingBase <- R6Class("PlottingBase",
                         public = list(
@@ -65,7 +67,7 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                            data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file),
                                                      gene_folder = gene_folder,
                                                      pattern = pattern)
-                           df_diff_expr <- data$extract_top_n_gene_feature(top_n = top_n,
+                           df_diff_expr <- data$extract_top_and_tail_n_gene_feature(top_n = top_n,
                                                                            pivot = T,
                                                                            feature = feature,
                                                                            log_2_FC = 2, 
@@ -220,7 +222,7 @@ BoxPlot <- R6Class("BoxPlot",
                        data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file), 
                                                  gene_folder = self$gene_folder, 
                                                  pattern = pattern)
-                       df_diff_expr_unpivot <- data$extract_top_n_gene_feature(top_n = top_n, 
+                       df_diff_expr_unpivot <- data$extract_top_and_tail_n_gene_feature(top_n = top_n, 
                                                                                pivot = F,
                                                                                feature = feature, 
                                                                                log_2_FC = 2, 
@@ -233,6 +235,80 @@ BoxPlot <- R6Class("BoxPlot",
 
                        # save the image
                        self$save_plot(plot)
+                     }
+                   )
+)
+
+CorrelationPlot <- R6Class("BoxPlot",
+                   inherit = PlottingBase,
+                   
+                   public = list(
+                     # correlation Analysis
+                     correlationAnalysis = function(diff_expr_file, top_n) {
+                       
+                       data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file), 
+                                                 gene_folder = self$gene_folder, 
+                                                 pattern = pattern)
+                       df_diff_expr_unpivot <- data$extract_top_n_gene_feature(top_n = top_n, 
+                                                                               pivot = T,
+                                                                               feature = feature, 
+                                                                               log_2_FC = 2, 
+                                                                               p_value = 0.05)
+                       # correlation matrix
+                       df_matrix <- as.matrix(df_diff_expr_unpivot[, -c(1, 2, 3)])
+                       rownames(df_matrix) <- df_diff_expr_unpivot$Name
+
+                       aggregated_correlation <- cor(t(df_matrix), method="pearson")
+                       
+                       return(aggregated_correlation)
+                       
+                     },
+                     drawMatrixPlot = function(diff_expr_file, title, pattern) {
+                       # correlation analysis
+                       corr_results <- self$correlationAnalysis(diff_expr_file, top_n)
+
+                       # plot
+                       sector.names <- colnames(corr_results)
+                       
+                       # self$save_plot(plot) doesn't work
+                       png(filename = self$output, 
+                           width = self$width, 
+                           height = self$height, 
+                           res = self$res, 
+                           bg = self$bg)
+
+                       corrplot(corr_results, method = "color", type = "upper", order = "hclust",
+                                addCoef.col = "black",
+                                tl.col = "black",
+                                tl.srt = 45,
+                                cl.pos = "b",
+                                cl.cex = 0.75)
+                       title(main = title, line = +2)
+
+                       dev.off()
+
+                       # # save the image
+                       # self$save_plot(plot)
+                     },
+                     drawChordPlot = function(diff_expr_file, title, pattern) {
+                       # correlation analysis
+                       corr_results <- self$correlationAnalysis(diff_expr_file, top_n)
+
+                       # self$save_plot(plot) doesn't work
+                       png(filename = self$output, 
+                           width = self$width, 
+                           height = self$height, 
+                           res = self$res, 
+                           bg = self$bg)
+
+                       chordDiagram(corr_results, 
+                                    transparency = 0.3)
+                       title(main = title, line = 0)
+
+                       dev.off()
+                       
+                       # # save the image
+                       # self$save_plot(plot)
                      }
                    )
 )
