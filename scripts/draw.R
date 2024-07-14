@@ -91,7 +91,7 @@ HeatmapPlot <- R6Class("HeatmapPlot",
                              name = "Expression",
                              col = colorRampPalette(c("blue", "white", "red"))(75),
                              cluster_rows = TRUE,
-                             cluster_columns = FALSE,
+                             cluster_columns = TRUE,
                              show_row_names = flag_row_name,
                              top_annotation = column_annotation,
                              column_title = column_title,
@@ -245,6 +245,7 @@ CorrelationPlot <- R6Class("BoxPlot",
                    public = list(
                      # correlation Analysis
                      correlationAnalysis = function(diff_expr_file, top_n) {
+                       feature = "TPM"
                        
                        data <- DataProcessor$new(diff_expr_file = file.path(self$data_dir,diff_expr_file), 
                                                  gene_folder = self$gene_folder, 

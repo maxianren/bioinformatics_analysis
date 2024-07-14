@@ -25,16 +25,19 @@ GeneDataProcessor <- R6Class("GeneDataProcessor",
                              file_name_full <- self$get_file_paths()
                              file_name <- basename(file_name_full)
                              file_name_clean <- gsub(" .*", "", file_name)
-                             
+
                              file_name_clean_cy <- file_name_clean
                              
-                             sample_id <- stringr::str_extract(file_name_clean_cy, "(?<=_)\\d+(?=_)")
-                             file_name_clean_cy <- stringr::str_remove(file_name_clean_cy, "_\\d+")
-                             genotype <- stringr::str_extract(file_name_clean_cy, "(?<=_)\\w+(?=-)")
+                             sample_id <- stringr::str_extract(file_name_clean_cy, "(?<=_)[A-Za-z0-9]+(?=_)")
+                             file_name_clean_cy <- stringr::str_remove(file_name_clean_cy, "_[A-Za-z0-9]+")
+                             genotype <- stringr::str_extract(file_name_clean_cy, "(?<=_)\\w+(?=-)") 
                              file_name_clean_cy <- stringr::str_remove(file_name_clean_cy, "_\\w+")
-                             gender <- stringr::str_extract(file_name_clean_cy, "(?<=-)\\w(?=-)")
+                             gender <- stringr::str_extract(file_name_clean_cy, "(?<=-)\\w+(?=-)")
                              file_name_clean_cy <- stringr::str_remove(file_name_clean_cy, "-\\w")
                              treatment <- stringr::str_extract(file_name_clean_cy, "(?<=-).+")
+                             treatment <- stringr::str_remove(treatment, "\\.csv")
+                             
+
                              
                              df <- data.frame(
                                file_name_full = file_name_full,
@@ -68,6 +71,8 @@ GeneFeatureExtractor <- R6Class("GeneFeatureExtractor",
                                     for (file_path in file_paths) {
                                       data_df <- read_csv(file_path)
                                       file_name <- gsub(pattern = " .*", replacement = "", x = basename(file_path))
+                                      # file_name <- gsub(pattern = "\\.csv", replacement = "", file_name)
+                                        
                                       file_name_column <- paste(file_name, self$feature, sep = "_")
                                       
                                       merged_df <- updated_df %>%
@@ -90,15 +95,20 @@ GeneFeatureExtractor <- R6Class("GeneFeatureExtractor",
                                         values_to = self$feature
                                       ) %>%
                                       dplyr::mutate(
+
                                         Sample = str_remove(Sample, paste0("_", self$feature)),
-                                        Number = str_extract(Sample, "(?<=_)\\d+(?=_?)"),
-                                        Sample = str_remove(Sample, "_\\d+_"),
+                                        Sample = str_remove(Sample, ".csv"),
+                                        Number = str_extract(Sample, "(?<=_)[A-Za-z0-9]+(?=_?)"),
+                                        Sample = str_remove(Sample, "_[A-Za-z0-9]+_"),
                                         Gene = str_extract(Sample, "^[^\\-]+"),
                                         Sample = str_remove(Sample, "^[^\\-]+\\-"),
-                                        Gender = str_sub(Sample, 1, 1),
-                                        Treatment = str_sub(Sample, 3)
+                                        Gender = str_extract(Sample, "^[^\\-]+"),
+                                        Sample = str_remove(Sample, "^[^\\-]+\\-"),
+                                        Treatment = Sample
+
                                       ) %>%
                                       dplyr::select(-Sample)
+                                    print(df_unpivot)
                                     return(df_unpivot)
                                   },
                                   
