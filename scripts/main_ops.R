@@ -7,10 +7,10 @@ out_dir = "out/DanteLabs2024"
 # heat map #####################################################################
 ## compare treatment KO - 100_g vs. PBS====
 # var
-diff_expr_file = "diff_expr_PAO1 vs. PBS - WT,Splunc1_KO.csv" # Change as you need
-pattern = "(.*WT.*PAO1.*|.*WT.*PBS.*|.*Splunc1_KO.*PAO1.*|.*Splunc1_KO.*PBS.*)" # Change as you need
+diff_expr_file = "diff_expr_Lplunc1_KO vs. WT - PBS.csv" # Change as you need
+pattern = "(.*WT.*PBS.*|.*Lplunc1_KO.*PBS.*)" # Change as you need
 
-control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+control_group = str_remove_all(diff_expr_file, "diff_expr_\\.csv")
 
 # top 2Ns
 for (top_n in c(30, 0)) {
@@ -38,7 +38,7 @@ for (top_n in c(30, 0)) {
 top_n = 10 # Change as you need
 
 
-control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+control_group = str_remove_all(diff_expr_file, "diff_expr_\\.csv")
 
 # plot
 go_plot <- GoAnalysisPlot$new(data_dir = data_dir,
@@ -56,10 +56,11 @@ go_plot$drawDotPlot(diff_expr_file = diff_expr_file,
 # var
 
 # diff_expr_file = "diff_expr_KO,WT,SPURT - 100_g vs. PBS.csv" # Change as you need
+source("scripts/draw.R")
 top_n = 15 # Change as you need
 
 
-control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+control_group = str_remove_all(diff_expr_file, "diff_expr_\\.csv")
 
 # plot
 kegg_plot <- KEGGPlot$new(data_dir = data_dir,
@@ -76,12 +77,13 @@ kegg_plot$drawDotPlot(diff_expr_file = diff_expr_file,
 # KEGG analysis - CNetPlot ##################################################################
 ## WT - 5_g vs. PBS =============
 # var
+source("scripts/draw.R")
 
 # diff_expr_file = "diff_expr_KO,WT,SPURT - 100_g vs. PBS.csv" # Change as you need
 top_n = 5 # Change as you need
 
 
-control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+control_group = str_remove_all(diff_expr_file, "diff_expr_\\.csv")
 
 # plot
 kegg_plot <- KEGGPlot$new(data_dir = data_dir,
@@ -99,22 +101,22 @@ kegg_plot$drawCNetPlot(diff_expr_file = diff_expr_file,
 source("scripts/draw.R")
 
 # Var
-# diff_expr_file = "diff_expr_WT - 5_g vs. PBS.csv" # Change as you need
-# pattern = "(.*WT.*5_g.*|.*WT.*PBS.*)" # Change as you need
+# diff_expr_file = "diff_expr_Lplunc1_KO vs. WT - PBS.csv" # Change as you need
+# pattern = "(.*WT.*PBS.*|.*Lplunc1_KO.*PBS.*)" # Change as you need
 top_n = 10 # Change as you need
 
-control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+control_group = str_remove_all(diff_expr_file, "diff_expr_\\.csv")
 
 # plot
 box_plot <- BoxPlot$new(data_dir = data_dir,
                         gene_folder = gene_folder,
-                        output = file.path(out_dir, sprintf("box_plot_%s.png", control_group)),
+                        output = file.path(out_dir, sprintf("box_plot_%s - top %d.png", control_group, top_n)),
                         width = 3000, 
                         height = 2400, 
                         res = 300, 
                         bg = "white")
 box_plot$draw(diff_expr_file = diff_expr_file, 
-              title = sprintf("Box Plot %s", control_group),
+              title = sprintf("Box Plot %s - top %d", control_group, top_n),
               pattern = pattern)
 # correlation - matrix plot #####################################################################
 ## KO - 5_g vs. PBS ===============================
@@ -126,7 +128,7 @@ source("scripts/draw.R")
 # pattern = "(.*WT.*5_g.*|.*WT.*PBS.*)" # Change as you need
 top_n = 15 # Change as you need
 
-control_group = str_remove_all(diff_expr_file, "diff_expr_|\\.csv")
+control_group = str_remove_all(diff_expr_file, "diff_expr_\\.csv")
 
 # plot
 corr_matrix_plot <- CorrelationPlot$new(data_dir = data_dir,

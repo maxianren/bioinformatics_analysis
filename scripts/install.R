@@ -5,6 +5,11 @@ if (!require("BiocManager", quietly = TRUE)){
 if (!require("GO.db", quietly = TRUE)) {
   BiocManager::install("GO.db")
 }
+
+if (!require("biomaRt", quietly = TRUE)) {
+  BiocManager::install("biomaRt")
+}
+
 if (!require("clusterProfiler", quietly = TRUE)) {
   BiocManager::install("clusterProfiler")
 }

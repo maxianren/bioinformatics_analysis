@@ -25,9 +25,11 @@ GeneDataProcessor <- R6Class("GeneDataProcessor",
                              file_name_full <- self$get_file_paths()
                              file_name <- basename(file_name_full)
                              file_name_clean <- gsub(" .*", "", file_name)
+                             file_name_clean <- gsub("\\.csv", "", file_name_clean)
+
 
                              file_name_clean_cy <- file_name_clean
-                             
+
                              sample_id <- stringr::str_extract(file_name_clean_cy, "(?<=_)[A-Za-z0-9]+(?=_)")
                              file_name_clean_cy <- stringr::str_remove(file_name_clean_cy, "_[A-Za-z0-9]+")
                              genotype <- stringr::str_extract(file_name_clean_cy, "(?<=_)\\w+(?=-)") 
@@ -35,8 +37,6 @@ GeneDataProcessor <- R6Class("GeneDataProcessor",
                              gender <- stringr::str_extract(file_name_clean_cy, "(?<=-)\\w+(?=-)")
                              file_name_clean_cy <- stringr::str_remove(file_name_clean_cy, "-\\w")
                              treatment <- stringr::str_extract(file_name_clean_cy, "(?<=-).+")
-                             treatment <- stringr::str_remove(treatment, "\\.csv")
-                             
 
                              
                              df <- data.frame(
@@ -71,14 +71,14 @@ GeneFeatureExtractor <- R6Class("GeneFeatureExtractor",
                                     for (file_path in file_paths) {
                                       data_df <- read_csv(file_path)
                                       file_name <- gsub(pattern = " .*", replacement = "", x = basename(file_path))
-                                      # file_name <- gsub(pattern = "\\.csv", replacement = "", file_name)
-                                        
+                                      file_name <- gsub(pattern = "\\.csv", replacement = "", file_name)
                                       file_name_column <- paste(file_name, self$feature, sep = "_")
-                                      
+
                                       merged_df <- updated_df %>%
                                         left_join(data_df, by = c("Name" = "Name")) %>%
                                         dplyr::select(Name, self$feature) %>%
                                         dplyr::rename(!!file_name_column := self$feature)
+
                                       
                                       updated_df[[file_name_column]] <- merged_df[[file_name_column]]
                                       updated_df <- updated_df %>%
@@ -108,7 +108,6 @@ GeneFeatureExtractor <- R6Class("GeneFeatureExtractor",
 
                                       ) %>%
                                       dplyr::select(-Sample)
-                                    print(df_unpivot)
                                     return(df_unpivot)
                                   },
                                   
@@ -135,9 +134,11 @@ DifferentialExpressionDataProcessor <- R6Class("DifferentialExpressionDataProces
                 
                                     #filter diff_expr dataframe, return a df
                                     filter_df = function(log_2_FC, p_value) {
-                                      df_filtered <- self$df_diff_expr %>%
-                                        filter(!is.na(`P-value`) & abs(`Log? fold change`) > log_2_FC & `P-value` < p_value) 
-                                      return(df_filtered)
+                                      df_diff_expr <- self$df_diff_expr %>%
+                                        filter(!is.na(`P-value`) & abs(`Log? fold change`) > log_2_FC & `P-value` < p_value)
+
+                                      
+                                      return(df_diff_expr)
                                     },
 
                                     #filter diff_expr dataframe, return a gene list
@@ -202,11 +203,11 @@ DifferentialExpressionDataProcessor <- R6Class("DifferentialExpressionDataProces
                                       combined_df <- bind_rows(df_top_n, df_tail_n)
                                       return(combined_df)
                                     }
-                                    
-
 
                                   )
 )
+
+
 
 DataProcessor <- R6Class("DataProcessor",
                     public = list(
@@ -223,10 +224,10 @@ DataProcessor <- R6Class("DataProcessor",
                       },
                       
                       extract_top_and_tail_n_gene_feature = function(feature, top_n, pivot, log_2_FC, p_value) {
-
+                        # diff expr
                         diff_expr <- DifferentialExpressionDataProcessor$new(self$diff_expr_file)
-                        print(diff_expr, top_n, log_2_FC)
                         gene_top_n <- diff_expr$get_top_and_tail_n_genes(top_n, log_2_FC, p_value)
+                        # gene files
                         feature_processor <- GeneFeatureExtractor$new(self$gene_folder, self$pattern, feature)
                         
                         gene_feature_pivot <- feature_processor$extract_feature_pivot(gene_top_n)
@@ -235,13 +236,11 @@ DataProcessor <- R6Class("DataProcessor",
                         } else {
                           gene_feature <- gene_feature_pivot
                         }
-                        
                         return(gene_feature)
                       },
                       extract_top_n_gene_feature = function(feature, top_n, pivot, log_2_FC, p_value) {
 
                         diff_expr <- DifferentialExpressionDataProcessor$new(self$diff_expr_file)
-                        print(diff_expr, top_n, log_2_FC)
                         gene_top_n <- diff_expr$get_top_n_genes(top_n, log_2_FC, p_value)
                         feature_processor <- GeneFeatureExtractor$new(self$gene_folder, self$pattern, feature)
                         
